@@ -1,0 +1,37 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}Получатели{% endblock %}
+
+{% block content %}
+<h1>Получатели</h1>
+<a href="{% url 'mail:recipient_create' %}" class="btn btn-primary mb-3">Добавить получателя</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Ф.И.О.</th>
+            <th>Комментарий</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for recipient in recipients %}
+        <tr>
+            <td>{{ recipient.email }}</td>
+            <td>{{ recipient.full_name }}</td>
+            <td>{{ recipient.comment|default:"-" }}</td>
+            <td>
+                <a href="{% url 'mail:recipient_detail' recipient.pk %}" class="btn btn-sm btn-info">Просмотр</a>
+                <a href="{% url 'mail:recipient_update' recipient.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                <a href="{% url 'mail:recipient_delete' recipient.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">Нет получателей</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

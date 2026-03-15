@@ -1,0 +1,54 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}{% if object %}Редактировать{% else %}Создать{% endif %} рассылку{% endblock %}
+
+{% block content %}
+<h1>{% if object %}Редактировать{% else %}Создать{% endif %} рассылку</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="mb-3">
+        <label class="form-label">Дата и время начала:</label>
+        {{ form.start_time }}
+        {% if form.start_time.errors %}
+            <div class="text-danger">{{ form.start_time.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Дата и время окончания:</label>
+        {{ form.end_time }}
+        {% if form.end_time.errors %}
+            <div class="text-danger">{{ form.end_time.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Сообщение:</label>
+        {{ form.message }}
+        {% if form.message.errors %}
+            <div class="text-danger">{{ form.message.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Получатели (удерживайте Ctrl для выбора нескольких):</label>
+        {{ form.recipients }}
+        {% if form.recipients.errors %}
+            <div class="text-danger">{{ form.recipients.errors }}</div>
+        {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a href="{% url 'mail:mailing_list' %}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}

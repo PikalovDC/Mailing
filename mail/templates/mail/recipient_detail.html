@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ recipient.full_name }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>{{ recipient.full_name }}</h1>
+
+        <table class="table table-bordered">
+            <tr>
+                <th>Email</th>
+                <td>{{ recipient.email }}</td>
+            </tr>
+            <tr>
+                <th>Ф.И.О.</th>
+                <td>{{ recipient.full_name }}</td>
+            </tr>
+            <tr>
+                <th>Комментарий</th>
+                <td>{{ recipient.comment|default:"-" }}</td>
+            </tr>
+        </table>
+
+        <a href="{% url 'mail:recipient_update' recipient.pk %}" class="btn btn-warning">Изменить</a>
+        <a href="{% url 'mail:recipient_delete' recipient.pk %}" class="btn btn-danger">Удалить</a>
+        <a href="{% url 'mail:recipient_list' %}" class="btn btn-secondary">Назад к списку</a>
+    </div>
+</body>
+</html>
