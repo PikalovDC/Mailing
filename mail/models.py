@@ -23,16 +23,29 @@ class Recipient(models.Model):
     class Meta:
         verbose_name = "Получатель"
         verbose_name_plural = "Получатели"
+        permissions = [
+            ('can_view_all_recipients', 'Может просматривать всех получателей'),
+        ]
 
 
 class Message(models.Model):
     """Модель сообщения для рассылки"""
     subject = models.CharField(max_length=255, verbose_name='Тема письма')
     body = models.TextField(verbose_name='Тело письма')
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='messages',
+        verbose_name='Владелец',
+        null=True
+    )
 
     class Meta:
         verbose_name = 'Сообщение'
         verbose_name_plural = 'Сообщения'
+        permissions = [
+            ('can_view_all_messages', 'Может просматривать все сообщения'),
+        ]
 
     def __str__(self):
         return self.subject
@@ -46,8 +59,21 @@ class Mailing(models.Model):
         ('completed', 'Завершена'),
     ]
 
+    PERIODICITY_CHOICES = [
+        ('once', 'Однократная'),
+        ('daily', 'Ежедневная'),
+        ('weekly', 'Еженедельная'),
+        ('monthly', 'Ежемесячная'),
+    ]
+
     start_time = models.DateTimeField(verbose_name='Дата и время начала')
     end_time = models.DateTimeField(verbose_name='Дата и время окончания')
+    periodicity = models.CharField(
+        max_length=20,
+        choices=PERIODICITY_CHOICES,
+        default='once',
+        verbose_name='Периодичность'
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='created', verbose_name='Статус')
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='mailings', verbose_name='Сообщение')
     recipients = models.ManyToManyField(Recipient, related_name='mailings', verbose_name='Получатели')
@@ -62,6 +88,11 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
+        permissions = [
+            ('can_view_all_mailings', 'Может просматривать все рассылки'),
+            ('can_change_any_mailing', 'Может редактировать любые рассылки'),
+            ('can_delete_any_mailing', 'Может удалять любые рассылки'),
+        ]
 
     def __str__(self):
         return f'Рассылка от {self.start_time.strftime("%d.%m.%Y %H:%M")}'

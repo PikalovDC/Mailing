@@ -1,12 +1,23 @@
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login
 from django.contrib import messages
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.mail import send_mail
 from django.conf import settings
 from .forms import UserRegistrationForm, UserLoginForm
 from .models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
+class ProfileView(LoginRequiredMixin, UpdateView):
+    model = User
+    fields = ['username', 'email', 'phone_number', 'country', 'avatar']
+    template_name = 'users/profile.html'
+    success_url = reverse_lazy('users:profile')
+
+    def get_object(self):
+        return self.request.user
 
 
 class UserRegistrationView(CreateView):

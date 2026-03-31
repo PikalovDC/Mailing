@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.views import View
@@ -14,6 +13,17 @@ from django.core.cache import cache
 from django.views.decorators.vary import vary_on_cookie
 
 User = get_user_model()
+
+
+class AttemptListView(LoginRequiredMixin, ListView):
+    model = MailingAttempt
+    template_name = 'mail/attempt_list.html'
+    context_object_name = 'attempts'
+    paginate_by = 20
+
+    def get_queryset(self):
+        user_mailings = Mailing.objects.filter(owner=self.request.user)
+        return MailingAttempt.objects.filter(related_mailing__in=user_mailings).order_by('-attempt_time')
 
 
 class MailingSendView(LoginRequiredMixin, PermissionRequiredMixin, View):
@@ -96,10 +106,8 @@ class RecipientUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateVie
         return super().has_permission() or self.request.user == obj.owner
 
     def form_valid(self, form):
-        # Сброс кеша
-        cache.delete('home_stats')
-        cache.delete(f'recipient_list_{self.request.user.id}_False')
-        cache.delete(f'recipient_detail_{self.object.pk}')
+        messages.success(self.request, 'Получатель успешно обновлен')
+        return super().form_valid(form)
 
 
 class RecipientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
@@ -128,12 +136,15 @@ class MessageListView(ListView):
     context_object_name = 'messages'
 
     def get_queryset(self):
-        cache_key = 'message_list'
+        cache_key = f'message_list_{self.request.user.id}_{self.request.user.has_perm("mail.can_view_all_messages")}'
         queryset = cache.get(cache_key)
 
         if not queryset:
-            queryset = Message.objects.all()
-            cache.set(cache_key, queryset, 300)  # 5 минут
+            if self.request.user.has_perm('mail.can_view_all_messages'):
+                queryset = Message.objects.all()
+            else:
+                queryset = Message.objects.filter(owner=self.request.user)
+            cache.set(cache_key, queryset, 300)
 
         return queryset
 
@@ -151,6 +162,10 @@ class MessageCreateView(CreateView):
     fields = ['subject', 'body']
     template_name = 'mail/message_form.html'
     success_url = reverse_lazy('mail:message_list')
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class MessageUpdateView(UpdateView):
@@ -286,11 +301,11 @@ class UserListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
     model = User
     template_name = 'mail/user_list.html'
     context_object_name = 'users'
-    permission_required = 'auth.view_user'
+    permission_required = 'users.view_user'
 
 
 class UserBlockView(LoginRequiredMixin, PermissionRequiredMixin, View):
-    permission_required = 'auth.change_user'
+    permission_required = 'users.change_user'
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -299,3 +314,29 @@ class UserBlockView(LoginRequiredMixin, PermissionRequiredMixin, View):
         action = "разблокирован" if user.is_active else "заблокирован"
         messages.success(request, f'Пользователь {user.email} {action}')
         return redirect('mail:user_list')
+
+
+class ReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'mail/report.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_mailings = Mailing.objects.filter(owner=self.request.user)
+        user_attempts = MailingAttempt.objects.filter(related_mailing__in=user_mailings)
+
+        context['total_mailings'] = user_mailings.count()
+        context['total_attempts'] = user_attempts.count()
+        context['successful_attempts'] = user_attempts.filter(status='success').count()
+        context['failed_attempts'] = user_attempts.filter(status='failed').count()
+
+        context['mailing_stats'] = []
+        for mailing in user_mailings:
+            attempts = user_attempts.filter(related_mailing=mailing)
+            context['mailing_stats'].append({
+                'mailing': mailing,
+                'total': attempts.count(),
+                'success': attempts.filter(status='success').count(),
+                'failed': attempts.filter(status='failed').count(),
+            })
+
+        return context

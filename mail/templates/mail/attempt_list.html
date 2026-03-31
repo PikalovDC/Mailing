@@ -1,0 +1,43 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}Попытки рассылок{% endblock %}
+
+{% block content %}
+<h1>Попытки рассылок</h1>
+
+<table class="table table-bordered">
+    <thead>
+        <tr><th>Дата и время</th><th>Рассылка</th><th>Статус</th><th>Ответ сервера</th></tr>
+    </thead>
+    <tbody>
+        {% for attempt in attempts %}
+        <tr>
+            <td>{{ attempt.attempt_time|date:"d.m.Y H:i:s" }}</td>
+            <td>
+                <a href="{% url 'mail:mailing_detail' attempt.related_mailing.pk %}">
+                    Рассылка #{{ attempt.related_mailing.pk }}
+                </a>
+            </td>
+            <td>
+                <span class="badge {% if attempt.status == 'success' %}bg-success{% else %}bg-danger{% endif %}">
+                    {{ attempt.get_status_display }}
+                </span>
+            </td>
+            <td>{{ attempt.server_response }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center">Нет попыток</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if is_paginated %}
+<nav><ul class="pagination">
+    {% if page_obj.has_previous %}<li><a href="?page={{ page_obj.previous_page_number }}">«</a></li>{% endif %}
+    {% for num in page_obj.paginator.page_range %}
+        <li class="{% if num == page_obj.number %}active{% endif %}"><a href="?page={{ num }}">{{ num }}</a></li>
+    {% endfor %}
+    {% if page_obj.has_next %}<li><a href="?page={{ page_obj.next_page_number }}">»</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}

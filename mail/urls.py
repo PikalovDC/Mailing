@@ -29,4 +29,6 @@ urlpatterns = [
     path('mailing/<int:pk>/send/', views.MailingSendView.as_view(), name='mailing_send'),
     path('users/', views.UserListView.as_view(), name='user_list'),
     path('users/<int:pk>/block/', views.UserBlockView.as_view(), name='user_block'),
+    path('attempts/', views.AttemptListView.as_view(), name='attempt_list'),
+    path('report/', views.ReportView.as_view(), name='report'),
 ]

@@ -15,30 +15,28 @@ class Command(BaseCommand):
         manager_group, created = Group.objects.get_or_create(name='Менеджер')
 
         if created:
-            self.stdout.write(self.style.SUCCESS('Группа "Менеджер" создана'))
-        else:
-            self.stdout.write('Группа "Менеджер" уже существует')
+            self.stdout.write(self.style.SUCCESS('Группа "Менеджеры" создана'))
 
-        # Получаем content types для моделей
-        mailing_ct = ContentType.objects.get_for_model(Mailing)
+            # Права на модели mail
         recipient_ct = ContentType.objects.get_for_model(Recipient)
-        user_ct = ContentType.objects.get_for_model(User)
+        message_ct = ContentType.objects.get_for_model(Message)
+        mailing_ct = ContentType.objects.get_for_model(Mailing)
 
-        # Права для менеджера
-        manager_permissions = [
-            # Просмотр всех рассылок
-            Permission.objects.get(codename='view_mailing', content_type=mailing_ct),
-            # Просмотр всех получателей
-            Permission.objects.get(codename='view_recipient', content_type=recipient_ct),
-            # Просмотр пользователей
+        mail_permissions = [
+            Permission.objects.get(codename='can_view_all_recipients', content_type=recipient_ct),
+            Permission.objects.get(codename='can_view_all_messages', content_type=message_ct),
+            Permission.objects.get(codename='can_view_all_mailings', content_type=mailing_ct),
+            Permission.objects.get(codename='can_change_any_mailing', content_type=mailing_ct),
+            Permission.objects.get(codename='can_delete_any_mailing', content_type=mailing_ct),
+        ]
+
+        # Права на пользователей (users)
+        user_ct = ContentType.objects.get_for_model(User)
+        user_permissions = [
             Permission.objects.get(codename='view_user', content_type=user_ct),
-            # Блокировка пользователей (изменение is_active)
             Permission.objects.get(codename='change_user', content_type=user_ct),
         ]
 
-        # Назначаем права группе
-        for perm in manager_permissions:
+        for perm in mail_permissions + user_permissions:
             manager_group.permissions.add(perm)
             self.stdout.write(f'Добавлено разрешение: {perm.codename}')
-
-        self.stdout.write(self.style.SUCCESS('Настройка группы "Менеджер" завершена'))

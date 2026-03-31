@@ -32,9 +32,15 @@
             <td>{{ mailing.message.subject|truncatechars:30 }}</td>
             <td>{{ mailing.recipients.count }}</td>
             <td>
-                <a href="{% url 'mail:mailing_detail' mailing.pk %}" class="btn btn-sm btn-info">Просмотр</a>
-                <a href="{% url 'mail:mailing_update' mailing.pk %}" class="btn btn-sm btn-warning">Изменить</a>
-                <a href="{% url 'mail:mailing_delete' mailing.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                {% if user == mailing.owner or perms.mail.can_view_all_mailings %}
+                    <a href="..." class="btn btn-sm btn-info">Просмотр</a>
+                {% endif %}
+                {% if user == mailing.owner %}
+                    <a href="..." class="btn btn-sm btn-warning">Изменить</a>
+                {% endif %}
+                {% if user == mailing.owner or perms.mail.can_delete_any_mailing %}
+                    <a href="..." class="btn btn-sm btn-danger">Удалить</a>
+                {% endif %}
             </td>
         </tr>
         {% empty %}
