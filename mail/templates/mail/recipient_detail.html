@@ -1,0 +1,38 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}{{ recipient.full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>{{ recipient.full_name }}</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <th style="width: 30%">Email</th>
+                    <td>{{ recipient.email }}</td>
+                </tr>
+                <tr>
+                    <th>Ф.И.О.</th>
+                    <td>{{ recipient.full_name }}</td>
+                </tr>
+                <tr>
+                    <th>Комментарий</th>
+                    <td>{{ recipient.comment|default:"-" }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-footer">
+            {% if user == recipient.owner or perms.mail.change_recipient %}
+                <a href="{% url 'mail:recipient_update' recipient.pk %}" class="btn btn-warning">Изменить</a>
+            {% endif %}
+            {% if user == recipient.owner or perms.mail.delete_recipient %}
+                <a href="{% url 'mail:recipient_delete' recipient.pk %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
+            <a href="{% url 'mail:recipient_list' %}" class="btn btn-secondary">Назад к списку</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

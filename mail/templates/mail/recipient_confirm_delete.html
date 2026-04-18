@@ -1,0 +1,28 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}Удаление получателя{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3>Подтверждение удаления</h3>
+                </div>
+                <div class="card-body text-center">
+                    <p>Вы уверены, что хотите удалить получателя?</p>
+                    <h4 class="text-primary">{{ recipient.full_name }} ({{ recipient.email }})</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-danger">Да, удалить</button>
+                            <a href="{% url 'mail:recipient_detail' recipient.pk %}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

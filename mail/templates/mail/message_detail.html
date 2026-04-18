@@ -1,0 +1,18 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}{{ message.subject }}{% endblock %}
+
+{% block content %}
+<h1>{{ message.subject }}</h1>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Тема: {{ message.subject }}</h5>
+        <p class="card-text">{{ message.body|linebreaks }}</p>
+    </div>
+</div>
+
+<a href="{% url 'mail:message_update' message.pk %}" class="btn btn-warning mt-3">Изменить</a>
+<a href="{% url 'mail:message_delete' message.pk %}" class="btn btn-danger mt-3">Удалить</a>
+<a href="{% url 'mail:message_list' %}" class="btn btn-secondary mt-3">Назад к списку</a>
+{% endblock %}

@@ -8,9 +8,21 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "asgiref==3.11.1",
+    "Django==6.0.3",
+    "pillow==12.1.1",
+    "psycopg2-binary==2.9.11",
+    "python-dotenv==1.2.2",
+    "redis==7.3.0",
+    "sqlparse==0.5.5",
+    "tzdata==2025.3"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+# Максимальная длина строки
+line-length = 119
+exclude = '.git'

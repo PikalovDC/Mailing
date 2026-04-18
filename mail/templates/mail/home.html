@@ -1,0 +1,108 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}Главная - Сервис рассылок{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center mb-5">
+        <h1>Сервис управления рассылками</h1>
+        <p class="lead">Управляйте своими email-рассылками легко и удобно</p>
+    </div>
+</div>
+
+<!-- ОБЩАЯ СТАТИСТИКА -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Всего рассылок</h5>
+                <h2 class="display-4">{{ total_mailings }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Активных рассылок</h5>
+                <h2 class="display-4">{{ active_mailings }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body text-center">
+                <h5 class="card-title">Получателей</h5>
+                <h2 class="display-4">{{ total_recipients }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- СТАТИСТИКА ПОПЫТОК ДЛЯ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ -->
+{% if user.is_authenticated %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Моя статистика</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h3>{{ user_total_attempts }}</h3>
+                        <p>Мои попытки</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-success">{{ user_successful_attempts }}</h3>
+                        <p>Успешные</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-danger">{{ user_failed_attempts }}</h3>
+                        <p>Неуспешные</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h3 class="text-info">{{ user_sent_messages }}</h3>
+                        <p>Отправлено</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- КАРТОЧКИ РАЗДЕЛОВ -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Управление получателями</h5>
+                <p class="card-text">Добавляйте и редактируйте получателей рассылок</p>
+                <a href="{% url 'mail:recipient_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Управление сообщениями</h5>
+                <p class="card-text">Создавайте шаблоны писем</p>
+                <a href="{% url 'mail:message_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Управление рассылками</h5>
+                <p class="card-text">Создавайте и запускайте рассылки</p>
+                <a href="{% url 'mail:mailing_list' %}" class="btn btn-primary">Перейти</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

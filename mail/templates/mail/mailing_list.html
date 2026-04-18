@@ -1,0 +1,53 @@
+{% extends 'mail/base.html' %}
+
+{% block title %}Рассылки{% endblock %}
+
+{% block content %}
+<h1>Рассылки</h1>
+<a href="{% url 'mail:mailing_create' %}" class="btn btn-primary mb-3">Создать рассылку</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Дата начала</th>
+            <th>Дата окончания</th>
+            <th>Статус</th>
+            <th>Сообщение</th>
+            <th>Получателей</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mailing in mailings %}
+        <tr>
+            <td>{{ mailing.id }}</td>
+            <td>{{ mailing.start_time|date:"d.m.Y H:i" }}</td>
+            <td>{{ mailing.end_time|date:"d.m.Y H:i" }}</td>
+            <td>
+                <span class="badge {% if mailing.status == 'created' %}bg-secondary{% elif mailing.status == 'started' %}bg-success{% else %}bg-info{% endif %}">
+                    {{ mailing.get_status_display }}
+                </span>
+            </td>
+            <td>{{ mailing.message.subject|truncatechars:30 }}</td>
+            <td>{{ mailing.recipients.count }}</td>
+            <td>
+                {% if user == mailing.owner or perms.mail.can_view_all_mailings %}
+                    <a href="{% url 'mail:mailing_detail' mailing.pk %}" class="btn btn-sm btn-info">Просмотр</a>
+                {% endif %}
+                {% if user == mailing.owner %}
+                    <a href="{% url 'mail:mailing_update' mailing.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                {% endif %}
+                {% if user == mailing.owner or perms.mail.can_delete_any_mailing %}
+                    <a href="{% url 'mail:mailing_delete' mailing.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" class="text-center">Нет рассылок</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
