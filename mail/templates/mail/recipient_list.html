@@ -23,8 +23,12 @@
             <td>{{ recipient.comment|default:"-" }}</td>
             <td>
                 <a href="{% url 'mail:recipient_detail' recipient.pk %}" class="btn btn-sm btn-info">Просмотр</a>
-                <a href="{% url 'mail:recipient_update' recipient.pk %}" class="btn btn-sm btn-warning">Изменить</a>
-                <a href="{% url 'mail:recipient_delete' recipient.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                {% if user == recipient.owner or perms.mail.change_recipient %}
+                    <a href="{% url 'mail:recipient_update' recipient.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                {% endif %}
+                {% if user == recipient.owner or perms.mail.delete_recipient %}
+                    <a href="{% url 'mail:recipient_delete' recipient.pk %}" class="btn btn-sm btn-danger">Удалить</a>
+                {% endif %}
             </td>
         </tr>
         {% empty %}

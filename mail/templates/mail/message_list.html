@@ -21,11 +21,13 @@
             <td>{{ message.body|truncatechars:50 }}</td>
             <td>
                 {% if user == message.owner or perms.mail.can_view_all_messages %}
-                    <a href="..." class="btn btn-sm btn-info">Просмотр</a>
+                    <a href="{% url 'mail:message_detail' message.pk %}" class="btn btn-sm btn-info">Просмотр</a>
                 {% endif %}
-                {% if user == message.owner %}
-                    <a href="..." class="btn btn-sm btn-warning">Изменить</a>
-                    <a href="..." class="btn btn-sm btn-danger">Удалить</a>
+                {% if user == message.owner or perms.mail.change_message %}
+                    <a href="{% url 'mail:message_update' message.pk %}" class="btn btn-sm btn-warning">Изменить</a>
+                {% endif %}
+                {% if user == message.owner or perms.mail.delete_message %}
+                    <a href="{% url 'mail:message_delete' message.pk %}" class="btn btn-sm btn-danger">Удалить</a>
                 {% endif %}
             </td>
         </tr>

@@ -1,8 +1,9 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .models import MailingAttempt
+from .models import MailingAttempt, Mailing
 import logging
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,31 @@ class MailingService:
             result = MailingService._send_to_recipient(mailing, recipient)
             results.append(result)
 
+        if mailing.periodicity != 'once':
+            MailingService._create_next_mailing(mailing)
+
         return results
+
+    @staticmethod
+    def _create_next_mailing(mailing):
+        """Создает следующую рассылку на основе периодичности"""
+        if mailing.periodicity == 'daily':
+            delta = timedelta(days=1)
+        elif mailing.periodicity == 'weekly':
+            delta = timedelta(days=7)
+        elif mailing.periodicity == 'monthly':
+            delta = timedelta(days=30)
+        else:
+            return
+
+        next_mailing = Mailing.objects.create(
+            start_time=mailing.start_time + delta,
+            end_time=mailing.end_time + delta,
+            periodicity=mailing.periodicity,
+            message=mailing.message,
+            owner=mailing.owner,
+        )
+        next_mailing.recipients.set(mailing.recipients.all())
 
     @staticmethod
     def _send_to_recipient(mailing, recipient):

@@ -11,6 +11,7 @@ from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from django.views.decorators.vary import vary_on_cookie
+from .forms import MailingForm
 
 User = get_user_model()
 
@@ -130,7 +131,7 @@ class RecipientDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteVie
 
 
 @method_decorator(cache_page(60 * 5), name='dispatch')
-class MessageListView(ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     template_name = 'mail/message_list.html'
     context_object_name = 'messages'
@@ -151,13 +152,20 @@ class MessageListView(ListView):
 
 @method_decorator(cache_page(60 * 15), name='dispatch')
 @method_decorator(vary_on_cookie, name='dispatch')
-class MessageDetailView(DetailView):
+class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
     template_name = 'mail/message_detail.html'
     context_object_name = 'message'
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if not (request.user == obj.owner or request.user.has_perm('mail.view_message')):
+            messages.error(request, 'У вас нет прав для просмотра')
+            return redirect('mail:message_list')
+        return super().dispatch(request, *args, **kwargs)
 
-class MessageCreateView(CreateView):
+
+class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     fields = ['subject', 'body']
     template_name = 'mail/message_form.html'
@@ -168,18 +176,27 @@ class MessageCreateView(CreateView):
         return super().form_valid(form)
 
 
-class MessageUpdateView(UpdateView):
+class MessageUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Message
     fields = ['subject', 'body']
     template_name = 'mail/message_form.html'
     success_url = reverse_lazy('mail:message_list')
 
+    def has_permission(self):
+        obj = self.get_object()
+        return super().has_permission() or self.request.user == obj.owner
 
-class MessageDeleteView(DeleteView):
+
+class MessageDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Message
     template_name = 'mail/message_confirm_delete.html'
     success_url = reverse_lazy('mail:message_list')
     context_object_name = 'message'
+    permission_required = 'mail.delete_message'
+
+    def has_permission(self):
+        obj = self.get_object()
+        return super().has_permission() or self.request.user == obj.owner
 
 
 @method_decorator(cache_page(60 * 5), name='dispatch')
@@ -224,9 +241,14 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
-    fields = ['start_time', 'end_time', 'message', 'recipients']
+    form_class = MailingForm
     template_name = 'mail/mailing_form.html'
     success_url = reverse_lazy('mail:mailing_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
@@ -235,10 +257,15 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
 
 class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Mailing
-    fields = ['start_time', 'end_time', 'message', 'recipients']
+    form_class = MailingForm
     template_name = 'mail/mailing_form.html'
     success_url = reverse_lazy('mail:mailing_list')
     permission_required = 'mail.change_mailing'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def has_permission(self):
         obj = self.get_object()

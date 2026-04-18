@@ -1,20 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Удаление получателя</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-4">
-        <h1>Удаление получателя</h1>
+{% extends 'mail/base.html' %}
 
-        <p>Вы уверены, что хотите удалить получателя "{{ recipient.full_name }} ({{ recipient.email }})"?</p>
+{% block title %}Удаление получателя{% endblock %}
 
-        <form method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Да, удалить</button>
-            <a href="{% url 'mail:recipient_list' %}" class="btn btn-secondary">Отмена</a>
-        </form>
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3>Подтверждение удаления</h3>
+                </div>
+                <div class="card-body text-center">
+                    <p>Вы уверены, что хотите удалить получателя?</p>
+                    <h4 class="text-primary">{{ recipient.full_name }} ({{ recipient.email }})</h4>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-danger">Да, удалить</button>
+                            <a href="{% url 'mail:recipient_detail' recipient.pk %}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
